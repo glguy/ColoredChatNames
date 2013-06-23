@@ -1,0 +1,22 @@
+name: ColoredChatNames
+version: 1.0
+author: glguy
+main: com.gmail.emertens.coloredchatnames.ColoredChatNames
+
+commands:
+  coloredchatnames:
+    description: Toggle the coloredchat status for a player
+    permission: coloredchatnames.toggle
+    usage: "Usage: /<command> [player]"
+
+permissions:
+  coloredchatnames.toggle:
+    description: Allows you to toggle your own colored chat status
+    default: true
+  coloredchatnames.toggle.others:
+    description: Allows you to toggle your own colored chat status of other players
+    default: op
+  coloredchatnames:
+    description: Players with this permission have colored chat names by default
+    default: true
+  
