@@ -17,6 +17,8 @@ permissions:
     description: Allows you to toggle your own colored chat status of other players
     default: op
   coloredchatnames:
-    description: Players with this permission have colored chat names by default
+    description: Players with this permission have their messages colored
     default: true
-  
+  coloredchatnames.target:
+    description: Players with this permission are valid targets for highlighting
+    default: true

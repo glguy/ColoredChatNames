@@ -52,7 +52,9 @@ public final class ColoredChatNames extends JavaPlugin {
 
 			for (final Player online : getServer().getOnlinePlayers()) {
 				// Perform a case-insensitive match on the whole-word
-				msg = msg.replaceAll("(?i)\\b"+online.getName()+"\\b", online.getDisplayName());
+				if (online.hasPermission("coloredchatnames.target")) {
+					msg = msg.replaceAll("(?i)\\b"+online.getName()+"\\b", online.getDisplayName());
+                                }
 			}
 
 			event.setMessage(msg);
