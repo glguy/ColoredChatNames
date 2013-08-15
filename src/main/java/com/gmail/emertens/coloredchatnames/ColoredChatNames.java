@@ -25,7 +25,7 @@ public final class ColoredChatNames extends JavaPlugin {
 	private static final String DISABLED_USERS_CONFIG_SECTION = "disabled-users";
 	private static final String PLAYER_NOT_FOUND = ChatColor.RED + "Player not found";
 	private static final String NO_TOGGLE_PERMISSION = ChatColor.RED + "You don't have permission to change other players.";
-	private static final String CONSOLE_MUST_SPECIFY_PLAYER = ChatColor.RED + "You must specify a player when running this from the console.";
+	private static final String CONSOLE_NOT_PLAYER = ChatColor.RED + "Console does not generate chat events.";
 	private static final String TOO_MANY_ARGUMENTS = ChatColor.RED + "Too many arguments.";
 	private static final String TOGGLE_COMMAND = "coloredchatnames";
 	private static final String TOGGLE_OTHER_PERMISSION = "coloredchatnames.toggle.other";
@@ -36,6 +36,7 @@ public final class ColoredChatNames extends JavaPlugin {
 	 * Set of users who will not have automatic coloring even if they have permission for it.
 	 */
 	private final Set<String> disabledUsers = new HashSet<String>();
+	private final Set<String> hasSpoken     = new HashSet<String>();
 
 	/**
 	 * Listener for asynchronous chat message. When appropriate the messages are colored.
@@ -44,12 +45,10 @@ public final class ColoredChatNames extends JavaPlugin {
 		@EventHandler(ignoreCancelled=true)
 		public void onAsyncPlayerChat(final AsyncPlayerChatEvent event) {
 
-			String msg = event.getMessage();
-			if (msg.contains(FORMATTING_CHARACTER)) return; // Don't auto-format a chat with manual formatting
-
 			final Player player = event.getPlayer();
 			if (!playerEnabled(player)) return;
 
+			String msg = event.getMessage();
 			for (final Player online : getServer().getOnlinePlayers()) {
 				// Perform a case-insensitive match on the whole-word
 				if (online.hasPermission("coloredchatnames.target")) {
@@ -59,6 +58,25 @@ public final class ColoredChatNames extends JavaPlugin {
 
 			event.setMessage(msg);
 		}
+
+		@EventHandler(ignoreCancelled=true)
+		public void checkAdvertisement(final AsyncPlayerChatEvent event) {
+
+			final Player player = event.getPlayer();
+			final String playerName = player.getName();
+			if (hasSpoken.contains(playerName)) {
+				return;
+			}
+
+			hasSpoken.add(playerName);
+
+			if (!event.getMessage().equals("connected with an iPhone using MineChat")) {
+				return;
+			}
+
+			event.setCancelled(true);
+			player.kickPlayer("Please disable your MineChat advertisement logon message");
+		}
 	};
 
 	/**
@@ -67,14 +85,11 @@ public final class ColoredChatNames extends JavaPlugin {
 	@Override
 	public boolean onCommand(final CommandSender sender, final Command command, final String label, final String[] args) {
 
-		final boolean commandHandled;
-
 		if (command.getName().equalsIgnoreCase(TOGGLE_COMMAND)) {
 			// Determine target
-			final Player target = determineTarget(sender, args);
-			if (target != null) {
+			final String targetName = determineTarget(sender, args);
+			if (targetName != null) {
 				// Determine the effect of the toggle
-				final String targetName = target.getName();
 				final boolean newSetting = togglePlayerStatus(targetName);
 				final String changeMsg = newSetting ? "disabled" : "enabled";
 				sender.sendMessage(ChatColor.GREEN + "Colored name chat " + changeMsg + " for " + targetName);
@@ -82,41 +97,42 @@ public final class ColoredChatNames extends JavaPlugin {
 				updateConfig();
 			}
 
-			commandHandled = true;
-		} else {
-			commandHandled = false;
+			return true;
 		}
 
-		return commandHandled;
+		return false;
 	}
 
-	private Player determineTarget(final CommandSender sender, final String[] args) {
-		final Player target;
+	private String determineTarget(final CommandSender sender, final String[] args) {
 
 		switch (args.length) {
 		case 0: // Player unspecified - target self
-			target = sender instanceof Player ? (Player)sender : null;
-			if (target == null) {
-				sender.sendMessage(CONSOLE_MUST_SPECIFY_PLAYER);
+
+			if (!(sender instanceof Player)) {
+				sender.sendMessage(CONSOLE_NOT_PLAYER);
+				return null;
 			}
-			break;
+
+			return sender.getName();
+
 		case 1: // Player specified
-			if (sender.hasPermission(TOGGLE_OTHER_PERMISSION)) {
-				target = getServer().getPlayer(args[0]);
-				if (target == null) {
-					sender.sendMessage(PLAYER_NOT_FOUND);
-				}
-			} else {
+
+			if (!sender.hasPermission(TOGGLE_OTHER_PERMISSION)) {
 				sender.sendMessage(NO_TOGGLE_PERMISSION);
-				target = null;
+				return null;
 			}
-			break;
+
+			final Player target = getServer().getPlayer(args[0]);
+			if (target == null) {
+				sender.sendMessage(PLAYER_NOT_FOUND);
+				return null;
+			}
+			return target.getName();
+
 		default: // Player over-specified
 			sender.sendMessage(TOO_MANY_ARGUMENTS);
-			target = null;
+			return null;
 		}
-
-		return target;
 	}
 
 	/**
