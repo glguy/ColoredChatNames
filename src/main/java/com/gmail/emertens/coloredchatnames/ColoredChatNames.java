@@ -39,22 +39,23 @@ public final class ColoredChatNames extends JavaPlugin {
     /**
      * Listener for asynchronous chat message. When appropriate the messages are colored.
      */
-    final Listener listener = new Listener() {
+    private final Listener listener = new Listener() {
         @EventHandler(ignoreCancelled = true)
         public void onAsyncPlayerChat(final AsyncPlayerChatEvent event) {
 
             final Player player = event.getPlayer();
-            if (!playerEnabled(player)) return;
+            if (playerEnabled(player)) {
 
-            String msg = event.getMessage();
-            for (final Player online : getServer().getOnlinePlayers()) {
-                // Perform a case-insensitive match on the whole-word
-                if (online.hasPermission(TARGET_PERMISSION)) {
-                    msg = msg.replaceAll("(?i)\\b" + online.getName() + "\\b", online.getDisplayName());
+                String msg = event.getMessage();
+                for (final Player online : getServer().getOnlinePlayers()) {
+                    // Perform a case-insensitive match on the whole-word
+                    if (online.hasPermission(TARGET_PERMISSION)) {
+                        msg = msg.replaceAll("(?i)\\b" + online.getName() + "\\b", online.getDisplayName());
+                    }
                 }
-            }
 
-            event.setMessage(msg);
+                event.setMessage(msg);
+            }
         }
     };
 
@@ -86,7 +87,7 @@ public final class ColoredChatNames extends JavaPlugin {
      * Compute the name of the player to be affected by a particular command.
      *
      * @param sender Sender of the command
-     * @param args Arguments to the command
+     * @param args   Arguments to the command
      * @return Name of player to target, null on failure
      */
     private String determineTarget(final CommandSender sender, final String[] args) {

@@ -8,5 +8,5 @@ Players can toggle this behavior with the command **/coloredchatnames**
 
 Permissions:
 - coloredchatnames - Allow the player to use this plugin
-- coloredchatnames.toggle - Allow the player to toggle the plugin's effect on him
-- coloredchatnames.toggle.other - Allow the player to toggle other players' effect
+- coloredchatnames.toggle - Allow the player to toggle the automatic chat text coloring
+- coloredchatnames.toggle.other - Allow toggling other players automatic chat text coloring

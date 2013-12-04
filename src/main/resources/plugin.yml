@@ -5,7 +5,7 @@ main: com.gmail.emertens.coloredchatnames.ColoredChatNames
 
 commands:
   coloredchatnames:
-    description: Toggle the coloredchat status for a player
+    description: Toggle automatic chat text coloring
     permission: coloredchatnames.toggle
     usage: "Usage: /<command> [player]"
 
